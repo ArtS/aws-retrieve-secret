@@ -15,27 +15,34 @@ namespace aws_retrieve_secret
             this.accessKeyId = accessKeyId;
             this.secretAccessKey = secretAccessKey;
         }
-        
+
         public string GetSecret(string secretName)
         {
-            IAmazonSecretsManager client = new AmazonSecretsManagerClient(accessKeyId, secretAccessKey, RegionEndpoint.APSoutheast2);
+            // Use the following form to take credentials directly from `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+            // environment variables:
+            // var client = new AmazonSecretsManagerClient(RegionEndpoint.APSoutheast2);
+
+            var client = new AmazonSecretsManagerClient(accessKeyId, secretAccessKey, RegionEndpoint.APSoutheast2);
 
             var request = new GetSecretValueRequest
             {
+                // this gets your secret name, 'web-api/passwords/database' in our case
                 SecretId = secretName
             };
-            
+
             GetSecretValueResponse response = null;
-            
-            // Exceptions are taken from AWS SDK API Reference here:
-            // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html#API_GetSecretValue_Errors
-            // 
-            // Setting breakpoints inside every exception handler can help you identify what's 
-            // wrong in each individual situation. 
+
             try
             {
                 response = client.GetSecretValueAsync(request).Result;
             }
+            //
+            // Exceptions are taken from AWS SDK API Reference here:
+            // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html#API_GetSecretValue_Errors
+            //
+            // Setting breakpoints inside every exception handler can help you identify what's
+            // wrong in each individual situation.
+            //
             catch (DecryptionFailureException e)
             {
                 // Secrets Manager can't decrypt the protected secret text using the provided KMS key.
